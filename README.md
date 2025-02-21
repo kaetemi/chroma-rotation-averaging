@@ -24,7 +24,7 @@ The Chroma Rotation Averaging (CRA) technique is an extension of the basic color
 
 By considering the rotated chroma planes during histogram matching, the CRA technique takes into account the actual color information more than just the individual channels. This helps to guide the colors in the right direction and avoid most color flips.
 
-The CRA technique is particularly effective in restoring the vividness of skin colors and the depth of the brightest and darkest blues in underwater images.
+The CRA technique is particularly effective in restoring the vividness of complex skin colors and the depth of the brightest and darkest blues in underwater images.
 
 ## Installation
 
