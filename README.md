@@ -66,11 +66,11 @@ The table above shows close-up views of the color-adjusted regions (first row) a
 
 Here are a few more stunning examples showcasing the beautiful color depth achieved using the tiled script:
 
-![Example 1](assets/example1.jpg)
+![Example 1](assets/polyverse_RU0005711_415307393_2878731469.webp)
 
-![Example 2](assets/example2.jpg)
+![Example 2](assets/polyverse_RU0005717_1621829523_419251530.webp)
 
-![Example 3](assets/example3.jpg)
+![Example 3](assets/polyverse_RU0005719_3344980821_2651363071.webp)
 
 ## Acknowledgements
 
