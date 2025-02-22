@@ -86,7 +86,7 @@ When using basic histogram matching, the resulting image primarily incorporates 
 
 On the other hand, the CRA matching produces a result that more closely resembles the color vibes of the reference image, pushing more greens into the overall color palette. The face shading retains all gradients without any banding, exhibiting more complex color gradients and vivid skin tone.
 
-It's important to note that the CRA rematching is not reversible due to the intentional color shift, whereas basic rematching is mostly reversible, aside from potential banding issues. The purpose of CRA is to shift and restore color gradients to be closer to the target image, rather than maintaining perfect reversibility.
+It's important to note that the CRA rematching is not reversible due to the intentional color shift, whereas basic rematching is mostly reversible, aside from potential banding issues. The purpose of CRA is to shift and restore color gradients to be closer to the target image (e.g. a lower resolution copy with better color), rather than maintaining perfect reversibility.
 
 ## Acknowledgements
 
