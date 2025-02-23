@@ -72,6 +72,22 @@ Here are a few more stunning examples showcasing the beautiful color depth achie
 
 ![Example 3](assets/polyverse_RU0005719_3344980821_2651363071.webp)
 
+## Image Retargeting Example
+
+In addition to restoring color depth in upscaled images, the Chroma Rotation Averaging (CRA) technique can also be used for image retargeting, where an input image is adjusted to match the color characteristics of a completely different reference image.
+
+| Input Image | Reference Image | Basic Histogram Matching | CRA Matching |
+|-------------|-----------------|--------------------------|--------------|
+| ![Input](assets/retarget_input.jpg) | ![Reference](assets/retarget_ref.jpg) | ![Basic](assets/retarget_output_basic.jpg) | ![CRA](assets/retarget_output_cra.jpg) |
+
+In this example, the input image is a Midjourney V6 image of a woman in a city, while the reference image is a Midjourney V3 image of a woman in a park. 
+
+When using basic histogram matching, the resulting image primarily incorporates more cyan and orange tones. However, the face takes on a greenish hue, and there are visible patches of color banding with hard edges, particularly a gray patch inside the face.
+
+On the other hand, the CRA matching produces a result that more closely resembles the color vibes of the reference image, pushing more greens into the overall color palette. The face shading retains all gradients without any banding, exhibiting more complex color gradients and vivid skin tone.
+
+It's important to note that the CRA rematching is not reversible due to the intentional color shift, whereas basic rematching is mostly reversible, aside from potential banding issues. The purpose of CRA is to shift and restore color gradients to be closer to the target image (e.g. a lower resolution copy with better color), rather than maintaining perfect reversibility.
+
 ## Acknowledgements
 
 The code in this repository was primarily written by DeepSeek R1 and Claude Sonnet, with some manual editing. The README was written by Claude Opus.

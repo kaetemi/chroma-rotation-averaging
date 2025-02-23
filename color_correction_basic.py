@@ -2,21 +2,19 @@ import cv2
 import numpy as np
 from PIL import Image
 from skimage import exposure
-from blendmodes.blend import blendLayers, BlendType
 import argparse
 
-# pip install opencv-python Pillow scikit-image blendmodes
+# pip install opencv-python Pillow scikit-image
 
-def setup_color_correction(image):
-    print("Calibrating color correction...")
-    return cv2.cvtColor(np.asarray(image.copy()), cv2.COLOR_RGB2LAB)
-
-def apply_color_correction(correction, original_image):
+def apply_color_correction(reference_image, original_image):
     print("Applying color correction...")
+    # Convert reference image to LAB color space
+    ref_lab = cv2.cvtColor(np.asarray(reference_image), cv2.COLOR_RGB2LAB)
+    
     # Convert and match histograms
     lab_image = cv2.cvtColor(np.asarray(original_image), cv2.COLOR_RGB2LAB)
     corrected = cv2.cvtColor(
-        exposure.match_histograms(lab_image, correction, channel_axis=2),
+        exposure.match_histograms(lab_image, ref_lab, channel_axis=2),
         cv2.COLOR_LAB2RGB
     ).astype("uint8")
     
@@ -28,8 +26,7 @@ def main(input_path, ref_path, output_path):
     input_image = Image.open(input_path).convert("RGB")
     
     # Process images
-    correction_target = setup_color_correction(ref_image)
-    result = apply_color_correction(correction_target, input_image)
+    result = apply_color_correction(ref_image, input_image)
     
     # Save output
     result.save(output_path)
@@ -42,5 +39,4 @@ if __name__ == "__main__":
     parser.add_argument("--output", required=True, help="Path to save output image")
     
     args = parser.parse_args()
-    
     main(args.input, args.ref, args.output)
