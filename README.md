@@ -92,7 +92,7 @@ It's important to note that the CRA rematching is not reversible due to the inte
 
 ## Acknowledgements
 
-The code in this repository was primarily written by DeepSeek R1 and Claude Sonnet, with some manual editing. The README was written by Claude Opus.
+The code in this repository was primarily written by DeepSeek R1 and Claude Sonnet, with some manual editing to fix issues with dithering. The README was mostly written by Claude Opus.
 
 ## License
 
