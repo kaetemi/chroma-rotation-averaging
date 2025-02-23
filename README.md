@@ -57,7 +57,7 @@ venv/bin/python color_correction_<script>.py --input <input_image> --ref <refere
 
 Here are some sample images demonstrating the effectiveness of the color depth restoration scripts:
 
-| Original | Upscaled (No Color Matching) | Basic Color Matching | CRA Color Matching | Tiled Color Matching |
+| Original | Upscaled (No Color Matching) | Basic Color Matching | CRA Color Matching | Tiled CRA Color Matching |
 |----------|------------------------------|----------------------|--------------------|----------------------|
 | ![Original](assets/original_closeup.jpg) | ![Upscaled](assets/upscaled_closeup.jpg) | ![Basic](assets/basic_closeup.jpg) | ![CRA](assets/cra_closeup.jpg) | ![Tiled](assets/tiled_closeup.jpg) |
 | ![Original](assets/original_full.jpg) | ![Upscaled](assets/upscaled_full.jpg) | ![Basic](assets/basic_full.jpg) | ![CRA](assets/cra_full.jpg) | ![Tiled](assets/tiled_full.jpg) |
