@@ -64,6 +64,10 @@ Here are some sample images demonstrating the effectiveness of the color depth r
 
 The table above shows close-up views of the color-adjusted regions (first row) and the full final images (second row) for each technique. Notice how the CRA technique effectively restores the vivid and complex skin colors and the depth of the brightest and darkest blues. The tiled approach further improves the chroma accuracy of the entire gradient, particularly between the darkest and mid blues.
 
+| Basic | Tiled CRA |
+|-------|-----------|
+| ![Basic](assets/basic_closeup.jpg) | ![Tiled](assets/tiled_closeup.jpg) |
+
 Specifically, the upscale without color matching loses saturation in the cyan range and basic histogram color matching causes some of the darkest blues to shift into red or purple looking gray and has significant banding issues. Our CRA technique reduces most of these issues, with some minor desaturation occurring in the mid blues in this image. Combined with localized tiling, the gradients match the original perfectly, with vibrant cyan and deep dark blues.
 
 Here are a few more stunning examples showcasing the beautiful color depth achieved using the tiled script:
