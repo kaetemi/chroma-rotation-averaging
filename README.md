@@ -1,6 +1,6 @@
 # Chroma Rotation Averaging (CRA) for Color Matching
 
-A collection of Python scripts for histogram-based color matching between images. Particularly useful in upscaler pipelines where some steps cause color shifts, resulting in duller or less vibrant images.
+A collection of Python scripts for histogram-based color matching between images. CRA matches histograms at multiple rotations of the color plane and averages the results, preserving color relationships across the entire hue range. Particularly useful in upscaler pipelines for restoring color vibrance and depth lost during processing.
 
 ## Overview
 
