@@ -1,76 +1,86 @@
-# Color Depth Restoration: Chroma Rotation Averaging (CRA) Technique
+# Chroma Rotation Averaging (CRA) for Color Matching
 
-Color Depth Restoration is a collection of Python scripts designed to restore the original color vibrance and shading depth contrast in images that have undergone upscaling processes. These scripts are particularly useful in an upscaler pipeline where some steps may cause color shifts, resulting in duller or less vibrant images.
+A collection of Python scripts for histogram-based color matching between images. Particularly useful in upscaler pipelines where some steps cause color shifts, resulting in duller or less vibrant images.
 
 ## Overview
 
-The repository includes three main scripts:
+The repository includes five scripts in two color space variants:
 
-1. `color_correction_basic.py`: Performs basic histogram matching to restore colors.
-2. `color_correction_cra.py`: Applies the Chroma Rotation Averaging (CRA) technique to mitigate color flips and improve color accuracy.
-3. `color_correction_tiled.py`: Builds upon the CRA technique by dividing the image into smaller tiles and blending them together to fix color issues with whole image gradients.
+### LAB Color Space (recommended)
+- **`color_correction_basic.py`**: Single-pass LAB histogram matching with optional luminosity preservation.
+- **`color_correction_cra.py`**: Applies the Chroma Rotation Averaging (CRA) technique in LAB space, rotating the AB chroma plane.
+- **`color_correction_tiled.py`**: Extends CRA with overlapping tile-based processing for images with spatially varying color casts.
+
+### RGB Color Space
+- **`color_correction_basic_rgb.py`**: Simple RGB histogram matching in linear RGB space.
+- **`color_correction_cra_rgb.py`**: CRA technique in RGB space, rotating around the gray axis (1,1,1). Includes optional perceptual weighting.
 
 ## Chroma Rotation Averaging (CRA) Technique
 
-The Chroma Rotation Averaging (CRA) technique is an extension of the basic color correction method that aims to mitigate color flips and improve overall color accuracy. The rationale behind this technique is as follows:
+The Chroma Rotation Averaging (CRA) technique is an extension of basic histogram matching that mitigates color flips and improves overall color accuracy.
 
-1. Basic histogram matching considers the histograms of each color channel separately, which can sometimes lead to colors aligned with the Lab color space's a-b axis flipping 180° in hue.
+### The Problem
 
-2. To address this issue, the CRA technique performs histogram matching on additional rotations of the chroma plane (e.g., 30° and 60° rotations) in addition to the original orientation.
+Basic histogram matching considers each color channel separately, which can sometimes lead to colors aligned with the LAB color space's A-B axes flipping 180° in hue. This often manifests as:
 
-3. The results from each rotation are then rotated back to the original orientation and averaged together.
+- Dark blues shifting to purple or reddish-gray
+- Skin tones losing their complex gradients
+- Visible color banding with hard edges
 
-4. This process is applied iteratively, with the blending factor increasing from 25% to 50% and finally 100% across iterations.
+### The Solution
 
-By considering the rotated chroma planes during histogram matching, the CRA technique takes into account the actual color information more than just the individual channels. This helps to guide the colors in the right direction and avoid most color flips.
+1. Perform histogram matching at multiple rotations of the color plane (0°, 30°, and 60° for LAB; 0°, 40°, and 80° for RGB).
+2. Rotate each result back to the original orientation.
+3. Average the results together.
+4. Apply iteratively with increasing blend factors (25% → 50% → 100%) for stability.
 
-The CRA technique is particularly effective in restoring the vividness of complex skin colors and the depth of the brightest and darkest blues in underwater images.
+By considering rotated color planes during histogram matching, CRA captures actual color relationships rather than just individual channel statistics. This guides colors in the right direction and prevents most color flips.
+
+### Variant Differences
+
+- **LAB CRA**: Rotates only the AB (chroma) plane, leaving luminosity independent. Uses 0°, 30°, 60° rotations.
+- **RGB CRA**: Rotates the entire RGB cube around the neutral gray axis using Rodrigues' rotation formula. Uses 0°, 40°, 80° rotations (evenly spaced across the 120° rotational symmetry).
 
 ## Installation
 
-To set up the required dependencies, follow these steps:
-
-1. Create a virtual environment using Python 3.10 on Ubuntu:
-   ```
+1. Create a virtual environment:
+   ```bash
    python3.10 -m venv venv
    ```
 
-2. Install the necessary packages using pip:
-   ```
-   venv/bin/python -m pip install opencv-python Pillow scikit-image blendmodes numba
+2. Install dependencies:
+   ```bash
+   venv/bin/python -m pip install opencv-python Pillow scikit-image numba
    ```
 
 ## Usage
 
-To use the color depth restoration scripts, run the desired script with the following command-line arguments:
-
-```
-venv/bin/python color_correction_<script>.py --input <input_image> --ref <reference_image> --output <output_image>
+```bash
+venv/bin/python <script>.py --input <input_image> --ref <reference_image> --output <output_image>
 ```
 
-- `<script>`: The name of the script you want to run (`basic`, `cra`, or `tiled`).
-- `<input_image>`: The path to the input image that needs color restoration.
-- `<reference_image>`: The path to the reference image with the desired color characteristics.
-- `<output_image>`: The path where the color-restored output image will be saved.
+- `<input_image>`: The image that needs color correction (e.g., an upscaled image with shifted colors).
+- `<reference_image>`: The image with the desired color characteristics (e.g., the original before upscaling).
+- `<output_image>`: Where to save the color-matched result.
+
+All scripts support `--verbose` / `-v` for detailed progress logging.
 
 ## Examples
 
-Here are some sample images demonstrating the effectiveness of the color depth restoration scripts:
-
-| Original | Upscaled (No Color Matching) | Basic Color Matching | CRA Color Matching | Tiled CRA Color Matching |
-|----------|------------------------------|----------------------|--------------------|----------------------|
+| Original | No Matching | Basic | CRA | Tiled CRA |
+|----------|------------------------|-------|-----|-----------|
 | ![Original](assets/original_closeup.jpg) | ![Upscaled](assets/upscaled_closeup.jpg) | ![Basic](assets/basic_closeup.jpg) | ![CRA](assets/cra_closeup.jpg) | ![Tiled](assets/tiled_closeup.jpg) |
 | ![Original](assets/original_full.jpg) | ![Upscaled](assets/upscaled_full.jpg) | ![Basic](assets/basic_full.jpg) | ![CRA](assets/cra_full.jpg) | ![Tiled](assets/tiled_full.jpg) |
 
-The table above shows close-up views of the color-adjusted regions (first row) and the full final images (second row) for each technique. Notice how the CRA technique effectively restores the vivid and complex skin colors and the depth of the brightest and darkest blues. The tiled approach further improves the chroma accuracy of the entire gradient, particularly between the darkest and mid blues.
+The first row shows close-up views of the color-corrected regions; the second row shows the full images.
+
+Notice how the CRA technique effectively preserves the vivid and complex skin colors and the depth of the brightest and darkest blues. The upscale without color matching loses saturation in the cyan range. Basic histogram matching causes some of the darkest blues to shift into purple-gray and introduces significant banding. CRA reduces most of these issues, with some minor desaturation in the mid blues. Combined with tiled processing, the gradients match the original almost perfectly—vibrant cyans and deep dark blues throughout.
 
 | Basic | Tiled CRA |
 |-------|-----------|
 | ![Basic](assets/basic_closeup.jpg) | ![Tiled](assets/tiled_closeup.jpg) |
 
-Specifically, the upscale without color matching loses saturation in the cyan range and basic histogram color matching causes some of the darkest blues to shift into red or purple looking gray and has significant banding issues. Our CRA technique reduces most of these issues, with some minor desaturation occurring in the mid blues in this image. Combined with localized tiling, the gradients match the original perfectly, with vibrant cyan and deep dark blues.
-
-Here are a few more stunning examples showcasing the beautiful color depth achieved using the tiled script:
+## Gallery
 
 ![Example 1](assets/polyverse_RU0005711_415307393_2878731469.webp)
 
@@ -78,26 +88,53 @@ Here are a few more stunning examples showcasing the beautiful color depth achie
 
 ![Example 3](assets/polyverse_RU0005719_3344980821_2651363071.webp)
 
-## Image Retargeting Example
+## Tiled Processing
 
-In addition to restoring color depth in upscaled images, the Chroma Rotation Averaging (CRA) technique can also be used for image retargeting, where an input image is adjusted to match the color characteristics of a completely different reference image.
+The `color_correction_tiled.py` script divides images into overlapping blocks for localized color correction. This helps with images that have spatially varying color casts, such as mixed lighting or gradients that span the entire image.
 
-| Input Image | Reference Image | Basic Histogram Matching | CRA Matching |
-|-------------|-----------------|--------------------------|--------------|
+### How It Works
+
+1. **Block generation**: Creates a 9×9 grid of tiles, then forms 64 overlapping 2×2-tile blocks (50% overlap between adjacent blocks)
+2. **Per-block CRA**: Each block undergoes iterative CRA correction matched against the corresponding region of the reference image
+3. **Hamming window blending**: Results are accumulated using Hamming window weights for smooth transitions between blocks
+4. **Global histogram match**: A final global LAB histogram match ensures overall color distribution matches the reference
+
+### Channel Handling
+
+| Channel | Default Behavior | With `--tiled-luminosity` |
+|---------|------------------|---------------------------|
+| A, B (chroma) | Per-block CRA → global match | Per-block CRA → global match |
+| L (luminosity) | Original L → global match | Per-block match → global match |
+
+Use `--tiled-luminosity` when different regions need different brightness adjustments. In most upscaling scenarios, the default works well since luminosity differences are typically global rather than localized.
+
+## Script Options
+
+| Script | Options |
+|--------|---------|
+| `color_correction_basic.py` | `--keep-luminosity` (preserve original L channel) |
+| `color_correction_cra.py` | `--keep-luminosity` (preserve original L channel) |
+| `color_correction_cra_rgb.py` | `--perceptual` / `-p` (weight channels by Rec.709 luminance) |
+| `color_correction_tiled.py` | `--tiled-luminosity` (process L channel per-tile before global match) |
+
+## Image Retargeting
+
+In addition to matching colors between versions of the same image, CRA can retarget an image to match the color characteristics of a completely different reference image.
+
+| Input | Reference | Basic | CRA |
+|-------|-----------|-------|-----|
 | ![Input](assets/retarget_input.jpg) | ![Reference](assets/retarget_ref.jpg) | ![Basic](assets/retarget_output_basic.jpg) | ![CRA](assets/retarget_output_cra.jpg) |
 
-In this example, the input image is a Midjourney V6 image of a woman in a city, while the reference image is a Midjourney V3 image of a woman in a park. 
+In this example, the input is a Midjourney V6 image of a woman in a city, while the reference is a Midjourney V3 image of a woman in a park.
 
-When using basic histogram matching, the resulting image primarily incorporates more cyan and orange tones. However, the face takes on a greenish hue, and there are visible patches of color banding with hard edges, particularly a gray patch inside the face.
+Basic histogram matching primarily adds cyan and orange tones, but the face takes on a greenish hue with visible patches of color banding. CRA matching pushes more greens into the overall palette while retaining smooth gradients in the face shading—no banding, more complex color gradients, and vivid skin tones.
 
-On the other hand, the CRA matching produces a result that more closely resembles the color vibes of the reference image, pushing more greens into the overall color palette. The face shading retains all gradients without any banding, exhibiting more complex color gradients and vivid skin tone.
-
-It's important to note that the CRA rematching is not reversible due to the intentional color shift, whereas basic rematching is mostly reversible, aside from potential banding issues. The purpose of CRA is to shift and restore color gradients to be closer to the target image (e.g. a lower resolution copy with better color), rather than maintaining perfect reversibility.
+**Note**: CRA retargeting is intentionally non-reversible (it shifts color gradients toward the target), while basic matching is mostly reversible aside from banding artifacts.
 
 ## Acknowledgements
 
-The code in this repository was primarily written by DeepSeek R1 and Claude Sonnet, with some manual editing to fix issues with dithering. Refactored with Claude 4.5 Opus. The README was mostly written by Claude Opus.
+Code primarily written by DeepSeek R1 and Claude Sonnet, with manual fixes for dithering. Refactored with Claude Opus 4.5. README by Claude Opus.
 
 ## License
 
-This project is licensed under the [BSD 3-Clause License](LICENSE.md).
+[BSD 3-Clause License](LICENSE.md)
