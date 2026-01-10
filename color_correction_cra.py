@@ -3,7 +3,61 @@ import numpy as np
 from PIL import Image
 from skimage import exposure
 import argparse
-import numba
+
+# ============== Dithering (conditional numba/WASM) ==============
+
+try:
+    import numba
+
+    @numba.jit(nopython=True)
+    def floyd_steinberg_dither(img):
+        """
+        Floyd-Steinberg dithering with linear buffer and overflow padding.
+        Matches the Rust WASM implementation exactly for bit-perfect output.
+
+        Args:
+            img: 2D numpy array of float32, values in range [0, 255]
+
+        Returns:
+            2D numpy array of uint8, same shape as input
+        """
+        h, w = img.shape
+        length = h * w
+
+        buf = np.zeros(length + w + 2, dtype=np.float32)
+        buf[:length] = img.ravel()
+
+        for i in range(length):
+            old = buf[i]
+            new = np.round(old)
+            buf[i] = new
+            err = old - new
+
+            buf[i + 1] += err * (7.0 / 16.0)
+            buf[i + w - 1] += err * (3.0 / 16.0)
+            buf[i + w] += err * (5.0 / 16.0)
+            buf[i + w + 1] += err * (1.0 / 16.0)
+
+        return np.clip(buf[:length], 0, 255).astype(np.uint8).reshape(h, w)
+
+except ImportError:
+    # Running in Pyodide — use WASM implementation
+    from js import floyd_steinberg_dither_wasm
+
+    def floyd_steinberg_dither(img):
+        """
+        Floyd-Steinberg dithering via Rust WASM.
+        Called when running in Pyodide where Numba is unavailable.
+        """
+        h, w = img.shape
+        # Convert to Python list to avoid proxy issues
+        flat = img.astype(np.float32).ravel().tolist()
+
+        # Call Rust WASM function
+        result = floyd_steinberg_dither_wasm(flat, w, h)
+
+        # Convert result back to numpy
+        return np.asarray(result.to_py(), dtype=np.uint8).reshape(h, w)
 
 # ============== sRGB <-> Linear RGB ==============
 
@@ -104,30 +158,6 @@ def scale_uint8_to_ab(a, b, ab_ranges):
     a_lab = a.astype(np.float32) / 255.0 * (a_max - a_min) + a_min
     b_lab = b.astype(np.float32) / 255.0 * (b_max - b_min) + b_min
     return a_lab, b_lab
-
-# ============== Dithering ==============
-
-@numba.jit(nopython=True)
-def floyd_steinberg_dither(img):
-    """Apply Floyd-Steinberg dithering to a single channel."""
-    h, w = img.shape
-    length = h * w
-    
-    buf = np.zeros(length + w + 2, dtype=np.float32)
-    buf[:length] = img.ravel()
-
-    for i in range(length):
-        old = buf[i]
-        new = np.round(old)
-        buf[i] = new
-        err = old - new
-
-        buf[i + 1] += err * (7.0 / 16.0)
-        buf[i + w - 1] += err * (3.0 / 16.0)
-        buf[i + w] += err * (5.0 / 16.0)
-        buf[i + w + 1] += err * (1.0 / 16.0)
-
-    return np.clip(buf[:length], 0, 255).astype(np.uint8).reshape(h, w)
 
 def dither_channel_stack(channels):
     """Dither a list of scaled float channels and stack them."""
